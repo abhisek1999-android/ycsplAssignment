@@ -41,12 +41,12 @@ class MapActivity : AppCompatActivity() {
 
 
         binding.currentLoc.setOnClickListener {
-            askLocation()
+            askLocation(isAnimateCam = true)
         }
         askLocation()
     }
 
-    private fun askLocation() {
+    private fun askLocation(isAnimateCam: Boolean = false) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -56,7 +56,7 @@ class MapActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ), 0)
         } else {
-            showLocation()
+            showLocation(isAnimateCam)
         }
 
 
@@ -68,7 +68,7 @@ class MapActivity : AppCompatActivity() {
         if (requestCode == 0 && grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED &&
             grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-            showLocation()
+            showLocation(false)
         } else {
             // permission denied, handle accordingly
             latLong= LatLng(26.889069012609692, 75.80286314603065)
@@ -80,7 +80,7 @@ class MapActivity : AppCompatActivity() {
 
 
     @SuppressLint("MissingPermission")
-    private fun showLocation() {
+    private fun showLocation(isAnimateCam: Boolean) {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER,
@@ -91,7 +91,7 @@ class MapActivity : AppCompatActivity() {
                         if (latitude != null && longitude != null) {
                             binding.locInfo.text = "Latitude: $latitude, Longitude: $longitude"
                              latLong = LatLng(latitude, longitude)
-                            setMapLocation(latLong?:LatLng(26.889069012609692, 75.80286314603065),"Current Location")
+                            setMapLocation(latLong?:LatLng(26.889069012609692, 75.80286314603065),"Current Location",isAnimateCam)
                         }
                     }
 
@@ -119,11 +119,19 @@ class MapActivity : AppCompatActivity() {
         setMapLocation(latLong?:LatLng(26.889069012609692, 75.80286314603065),"YCSPL")
     }
 
-    private fun setMapLocation(location: LatLng, s: String) {
+    private fun setMapLocation(location: LatLng, s: String,isAnimateCam : Boolean=false) {
 
         binding.mapView.getMapAsync { googleMap ->
             googleMap.addMarker(MarkerOptions().position(location).title(s))
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel))
+            //add custom marker design here
+
+            if (isAnimateCam){
+                googleMap.clear()
+                googleMap.addMarker(MarkerOptions().position(location).title(s))
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel))
+            }
+            else
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel))
         }
 
     }

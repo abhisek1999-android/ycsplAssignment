@@ -1,15 +1,17 @@
 package com.example.ycsplassignment
 
+import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
 import com.example.ycsplassignment.databinding.ActivityMainBinding
-import com.example.ycsplassignment.sp.EMAIL
-import com.example.ycsplassignment.sp.PASSWORD
-import com.example.ycsplassignment.sp.writeStringPref
+import com.example.ycsplassignment.databinding.DialogLayoutBinding
+import com.example.ycsplassignment.sp.*
 import com.google.android.gms.maps.MapView
 
 class MainActivity : AppCompatActivity() {
@@ -25,12 +27,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.gotoNextButton.setOnClickListener {
-            writeStringPref(this,binding.emailId.text.toString(), EMAIL)
-            writeStringPref(this,binding.passwordText.text.toString(), PASSWORD)
-            val intent = Intent(this,MapActivity::class.java)
-            intent.putExtra(EMAIL,binding.emailId.text.toString())
-            startActivity(intent)
-            finish()
+
+            // dismiss soft keyboard
+            val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(it.windowToken, 0)
+
+
+            if (readStringPref(this, EMAIL) == binding.emailId.text.toString() && readStringPref(this, PASSWORD) == binding.passwordText.text.toString()) {
+                gotoMapsActivity()
+            } else if(readStringPref(this, EMAIL) == "" && readStringPref(this, PASSWORD) == ""){
+                gotoMapsActivity()
+            }
+            else
+                displayNonMatchedCredentials()
         }
 
         binding.emailId.doAfterTextChanged {
@@ -56,6 +65,29 @@ class MainActivity : AppCompatActivity() {
 
 
 
+    }
+
+  private  fun gotoMapsActivity(){
+
+        writeStringPref(this,binding.emailId.text.toString(), EMAIL)
+        writeStringPref(this,binding.passwordText.text.toString(), PASSWORD)
+        val intent = Intent(this, MapActivity::class.java)
+        intent.putExtra(EMAIL, binding.emailId.text.toString())
+        startActivity(intent)
+        finish()
+    }
+
+  private  fun displayNonMatchedCredentials() {
+        DialogLayoutBinding.inflate(LayoutInflater.from(this)).also {
+
+            showUniversalDialog(binding.root.context, it){dialog->
+
+                it.continueButton.setOnClickListener {
+                    gotoMapsActivity()
+                }
+
+            }
+        }
     }
 
     private fun checkValidInputs() {
