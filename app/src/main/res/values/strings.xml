@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">YcsplAssignment</string>
+    <string name="email_id">EMAIL_ID</string>
+    <string name="password">PASSWORD</string>
+</resources>
